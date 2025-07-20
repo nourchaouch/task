@@ -13,7 +13,7 @@ class ResponsableController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:project_manager');
+        $this->middleware('rolemiddleware:project_manager');
     }
 
     public function index()

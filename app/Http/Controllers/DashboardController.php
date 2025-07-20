@@ -13,8 +13,8 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:team_member')->only('memberDashboard');
-        $this->middleware('role:project_manager')->only('managerDashboard');
+        $this->middleware('rolemiddleware:team_member')->only('memberDashboard');
+        $this->middleware('rolemiddleware:project_manager')->only('managerDashboard');
     }
 
     public function memberDashboard()
@@ -83,7 +83,6 @@ class DashboardController extends Controller
     public function managerDashboard()
     {
         $user = Auth::user();
-        
         // Get projects count
         $projectsCount = Project::count();
         

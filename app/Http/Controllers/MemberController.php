@@ -12,7 +12,7 @@ class MemberController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:team_member');
+        $this->middleware('rolemiddleware:team_member');
     }
 
     public function index()

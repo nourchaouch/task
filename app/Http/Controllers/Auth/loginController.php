@@ -32,6 +32,13 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             $user = Auth::user();
+            \Log::info('[LoginController] User logged in', [
+                'id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+                'guard' => Auth::getDefaultDriver(),
+                'session_id' => session()->getId(),
+            ]);
             if ($user->role === 'project_manager') {
                 return redirect()->route('dashboard.manager');
             } elseif ($user->role === 'team_member') {
