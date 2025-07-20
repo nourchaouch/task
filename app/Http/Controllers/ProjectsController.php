@@ -8,72 +8,76 @@ use App\Models\Project;
 class ProjectsController extends Controller
 {
 
-    public function insert(Request $request)
+    /**
+     * Display a listing of the projects.
+     */
+    public function index()
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'color' => 'required|string|max:50',
-        ]);
-
-        // Create a new project
-        $time = time();
-        $project = Project::createProject([
-            'name' => $request->name,
-            'color' => $request->color,
-            'created_at' => $time,
-            'updated_at' => $time
-        ]);
-
-        // Redirect to the home index page after creating a new project
-        return redirect()->route('home.index');
+        $projects = \App\Models\Project::all();
+        return view('projects.index', compact('projects'));
     }
 
-
-    public function update(Request $request, $id)
+    /**
+     * Show the form for creating a new project.
+     */
+    public function create()
     {
-        // Find the relevant project instance
-        $project = Project::find($id);
-
-        if (!$project) {
-            // If project not found, abort with 404 error
-            abort(404, 'Project not found.');
-        }
-
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'color' => 'required|string|max:50',
-        ]);
-
-        // Update the project properties
-        $project->updateProject([
-            'name' => $request->name,
-            'color' => $request->color,
-            'updated_at' => time()
-        ]);
-
-        // Redirect or show a message indicating successful update
-        return redirect()->route('home.index');
+        $managers = \App\Models\User::where('role', 'project_manager')->get();
+        return view('projects.create', compact('managers'));
     }
 
-
-    public function delete($id)
+    /**
+     * Store a newly created project in storage.
+     */
+    public function store(\Illuminate\Http\Request $request)
     {
-        // Find the relevant project instance
-        $project = Project::find($id);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'color' => 'required|string|max:50',
+            'manager_id' => 'nullable|exists:users,id',
+        ]);
+        \App\Models\Project::create($validated);
+        return redirect()->route('projects.index')->with('success', 'Project created successfully.');
+    }
 
-        if (!$project) {
-            // If project not found, abort with 404 error
-            abort(404, 'Project not found.');
-        }
+    /**
+     * Display the specified project.
+     */
+    public function show(\App\Models\Project $project)
+    {
+        $project->load('tasks');
+        return view('projects.show', compact('project'));
+    }
 
-        // Soft delete the project
+    /**
+     * Show the form for editing the specified project.
+     */
+    public function edit(\App\Models\Project $project)
+    {
+        $managers = \App\Models\User::where('role', 'project_manager')->get();
+        return view('projects.edit', compact('project', 'managers'));
+    }
+
+    /**
+     * Update the specified project in storage.
+     */
+    public function update(\Illuminate\Http\Request $request, \App\Models\Project $project)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'color' => 'required|string|max:50',
+            'manager_id' => 'nullable|exists:users,id',
+        ]);
+        $project->update($validated);
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
+    }
+
+    /**
+     * Remove the specified project from storage.
+     */
+    public function destroy(\App\Models\Project $project)
+    {
         $project->delete();
-
-        // In this part, all tasks dependent on the project should also be soft-deleted.
-
-        // Redirect or show a message indicating successful deletion
-        return redirect()->route('home.index');
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 }

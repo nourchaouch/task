@@ -9,54 +9,49 @@ use App\Models\Project;
 class TasksController extends Controller
 {
 
-    public function insert(Request $request)
+    public function create()
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'project' => 'required|exists:projects,id',
-            'name' => 'required|string',
-        ]);
-
-        // Create a new task
-        $time = time();
-        $task = Task::createTask([
-            'project' => $request->project,
-            'name' => $request->name,
-            'priority' => 0,
-            'is_completed' => 0,
-            'created_at' => $time,
-            'updated_at' => $time,
-        ]);
-
-        // Redirect to the home index page after creating a new task
-        return redirect()->route('home.index');
+        $projects = \App\Models\Project::all();
+        $users = \App\Models\User::all();
+        return view('tasks.create', compact('projects', 'users'));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'project_id' => 'required|exists:projects,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'priority' => 'nullable|integer',
+            'due_date' => 'nullable|date',
+            'status' => 'required|string',
+        ]);
+        $validated['created_by'] = auth()->id();
+        \App\Models\Task::create($validated);
+        return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+    }
+
+    public function edit($id)
+    {
+        $task = \App\Models\Task::findOrFail($id);
+        $projects = \App\Models\Project::all();
+        $users = \App\Models\User::all();
+        return view('tasks.edit', compact('task', 'projects', 'users'));
+    }
 
     public function update(Request $request, $id)
     {
-        // Find the relevant task instance
-        $task = Task::find($id);
-
-        if (!$task) {
-            // If task not found, abort with 404 error
-            abort(404, 'Task not found.');
-        }
-
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'project' => 'required|exists:projects,id',
-            'name' => 'required|string',
+        $task = \App\Models\Task::findOrFail($id);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'project_id' => 'required|exists:projects,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'priority' => 'nullable|integer',
+            'due_date' => 'nullable|date',
+            'status' => 'required|string',
         ]);
-
-        // Update the task properties
-        $task->updateTask([
-            'project' => $request->project,
-            'name' => $request->name,
-        ]);
-
-        // Redirect or show a message indicating successful update
-        return redirect()->route('home.index');
+        $task->update($validated);
+        return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
 
@@ -118,5 +113,23 @@ class TasksController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Display a listing of the tasks.
+     */
+    public function index()
+    {
+        $tasks = \App\Models\Task::with(['project', 'assignedTo'])->get();
+        return view('tasks.index', compact('tasks'));
+    }
+
+    /**
+     * Display the specified task.
+     */
+    public function show($id)
+    {
+        $task = \App\Models\Task::with(['project', 'assignedTo'])->findOrFail($id);
+        return view('tasks.show', compact('task'));
     }
 }

@@ -59,6 +59,14 @@ class Task extends Model
     }
 
     /**
+     * Get the user assigned to the task.
+     */
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /**
      * Get the comments for the task.
      */
     public function comments()

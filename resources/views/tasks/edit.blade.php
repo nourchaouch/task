@@ -1,32 +1,51 @@
 @extends('layouts.app')
 @section('content')
-<div class="container">
-    <h2>Edit Task</h2>
-    <form action="{{ route('tasks.update', $task) }}" method="POST">
+<div class="max-w-xl mx-auto bg-white p-8 rounded shadow mt-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Task</h2>
+    <form action="{{ route('tasks.update', $task) }}" method="POST" class="space-y-4">
         @csrf
         @method('PUT')
-        <div class="mb-3">
-            <label for="name" class="form-label">Task Name</label>
-            <input type="text" class="form-control" id="name" name="name" value="{{ $task->name }}" required>
+        <div>
+            <label for="title" class="block text-sm font-medium text-gray-700">Task Title</label>
+            <input type="text" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="title" name="title" value="{{ $task->title }}" required>
         </div>
-        <div class="mb-3">
-            <label for="project_id" class="form-label">Project</label>
-            <select class="form-select" id="project_id" name="project_id" required>
+        <div>
+            <label for="project_id" class="block text-sm font-medium text-gray-700">Project</label>
+            <select class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="project_id" name="project_id" required>
                 @foreach($projects as $project)
                     <option value="{{ $project->id }}" @if($task->project_id == $project->id) selected @endif>{{ $project->name }}</option>
                 @endforeach
             </select>
         </div>
-        <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select class="form-select" id="status" name="status" required>
+        <div>
+            <label for="assigned_to" class="block text-sm font-medium text-gray-700">Assign To</label>
+            <select class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="assigned_to" name="assigned_to">
+                <option value="">Unassigned</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" @if($task->assigned_to == $user->id) selected @endif>{{ $user->name }} ({{ $user->email }})</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
+            <input type="number" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="priority" name="priority" min="0" value="{{ $task->priority }}">
+        </div>
+        <div>
+            <label for="due_date" class="block text-sm font-medium text-gray-700">Due Date</label>
+            <input type="date" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="due_date" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d') : '' }}">
+        </div>
+        <div>
+            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+            <select class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="status" name="status" required>
                 <option value="pending" @if($task->status == 'pending') selected @endif>Pending</option>
                 <option value="in_progress" @if($task->status == 'in_progress') selected @endif>In Progress</option>
                 <option value="completed" @if($task->status == 'completed') selected @endif>Completed</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+        <div class="flex space-x-2">
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition">Update</button>
+            <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded hover:bg-gray-300 transition">Cancel</a>
+        </div>
     </form>
 </div>
 @endsection 
