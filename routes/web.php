@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TasksController;
-use App\Http\Controllers\AuthController;
+// use App\Http\Controllers\AuthController; // Removed: redundant, use Auth\* controllers instead
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\DashboardController;
@@ -13,14 +13,14 @@ use App\Http\Controllers\DashboardController;
 Route::middleware(['web'])->group(function () {
     // Guest routes
     Route::middleware(['guest'])->group(function () {
-        Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+        Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.submit');
         Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
         Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.submit');
     });
     
     // Logout route (requires authentication)
-    Route::post('/logout', [AuthController::class, 'logout'])
+    Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])
         ->name('logout')
         ->middleware('auth');
 });

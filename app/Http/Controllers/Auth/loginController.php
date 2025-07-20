@@ -3,14 +3,58 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
 
 
-    use AuthenticatesUsers;
+
+    /**
+     * Show the application's login form.
+     */
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Handle a login request to the application.
+     */
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+            if ($user->role === 'project_manager') {
+                return redirect()->route('dashboard.manager');
+            } elseif ($user->role === 'team_member') {
+                return redirect()->route('dashboard.member');
+            }
+            return redirect()->route('home.index');
+        }
+
+        return back()->withErrors([
+            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
+        ])->onlyInput('email');
+    }
+
+    /**
+     * Log the user out of the application.
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    }
 
     /**
      * Where to redirect users after login.
@@ -21,9 +65,9 @@ class LoginController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'responsable') {
+        if ($user->role === 'project_manager') {
             return route('dashboard.manager');
-        } elseif ($user->role === 'membre') {
+        } elseif ($user->role === 'team_member') {
             return route('dashboard.member');
         }
 

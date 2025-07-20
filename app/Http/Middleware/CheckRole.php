@@ -28,10 +28,10 @@ class CheckRole
             ]);
 
             // Redirect to the appropriate dashboard based on user's actual role
-            if ($user->role === 'responsable') {
+            if ($user->role === 'project_manager') {
                 return redirect()->route('dashboard.manager')
                     ->with('error', 'Accès non autorisé. Redirection vers votre tableau de bord.');
-            } else if ($user->role === 'membre') {
+            } else if ($user->role === 'team_member') {
                 return redirect()->route('dashboard.member')
                     ->with('error', 'Accès non autorisé. Redirection vers votre tableau de bord.');
             } else {

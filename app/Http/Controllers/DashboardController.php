@@ -13,8 +13,8 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:membre')->only('memberDashboard');
-        $this->middleware('role:responsable')->only('managerDashboard');
+        $this->middleware('role:team_member')->only('memberDashboard');
+        $this->middleware('role:project_manager')->only('managerDashboard');
     }
 
     public function memberDashboard()
