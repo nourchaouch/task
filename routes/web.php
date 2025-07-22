@@ -88,29 +88,4 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Allow team_member to update their own task status
         Route::patch('/{task}/status', [TasksController::class, 'updateStatus'])->name('tasks.updateStatus');
     });
-
-    // Quick log viewer for development only
-    // Route::get('/logs', function () {
-    //     $logFile = storage_path('logs/laravel.log');
-    //     if (!file_exists($logFile)) {
-    //         return 'Log file does not exist.';
-    //     }
-    //     return '<pre style="white-space: pre-wrap; word-break: break-all; background: #222; color: #eee; padding: 1em;">' . e(file_get_contents($logFile)) . '</pre>';
-    // })->middleware('auth');
-});
-
-// TEST: Direct middleware test route
-Route::get('/test-middleware', function () {
-    return 'Middleware works!';
-})->middleware('rolecheck:project_manager');
-
-// DEBUG: Output file and environment info
-Route::get('/debug-files', function () {
-    return response()->json([
-        'cwd' => getcwd(),
-        'kernel_exists' => file_exists(app_path('Http/Kernel.php')),
-        'kernel_path' => realpath(app_path('Http/Kernel.php')),
-        'kernel_contents' => file_get_contents(app_path('Http/Kernel.php')),
-        'middleware_dir' => scandir(app_path('Http/Middleware')),
-    ]);
 });
