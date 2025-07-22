@@ -71,7 +71,18 @@ class DashboardController extends Controller
                 $projects = collect();
             }
 
-            return view('dashboard.member', compact('tasks', 'projects', 'taskStats'));
+            // Get upcoming events (e.g., events with start_date in the future)
+            try {
+                $upcomingEvents = Event::where('start_date', '>=', now())
+                    ->orderBy('start_date', 'asc')
+                    ->take(6)
+                    ->get();
+            } catch (\Exception $e) {
+                \Log::error('Error fetching upcoming events: ' . $e->getMessage());
+                $upcomingEvents = collect();
+            }
+
+            return view('dashboard.member', compact('tasks', 'projects', 'taskStats', 'upcomingEvents'));
 
         } catch (\Exception $e) {
             \Log::error('Error in member dashboard: ' . $e->getMessage());

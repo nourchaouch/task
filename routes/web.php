@@ -8,6 +8,7 @@ use App\Http\Controllers\TasksController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventController;
 
 // Authentication Routes
 Route::middleware(['web'])->group(function () {
@@ -47,31 +48,44 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/member', [DashboardController::class, 'memberDashboard'])
         ->name('dashboard.member')
         ->middleware('rolemiddleware:team_member');
+
+    // Events index route for all authenticated users
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
 });
 
 // Protected routes
 Route::middleware(['web', 'auth'])->group(function () {
     
+
     // Projects Routes
     Route::prefix('projects')->group(function () {
+        // Only project_manager can manage projects (static routes first)
+        Route::middleware('rolemiddleware:project_manager')->group(function () {
+            Route::get('/create', [ProjectsController::class, 'create'])->name('projects.create');
+            Route::post('/', [ProjectsController::class, 'store'])->name('projects.store');
+            Route::get('/{project}/edit', [ProjectsController::class, 'edit'])->name('projects.edit');
+            Route::put('/{project}', [ProjectsController::class, 'update'])->name('projects.update');
+            Route::delete('/{project}', [ProjectsController::class, 'destroy'])->name('projects.destroy');
+        });
+        // Viewable by all authenticated users
         Route::get('/', [ProjectsController::class, 'index'])->name('projects.index');
-        Route::get('/create', [ProjectsController::class, 'create'])->name('projects.create');
-        Route::post('/', [ProjectsController::class, 'store'])->name('projects.store');
         Route::get('/{project}', [ProjectsController::class, 'show'])->name('projects.show');
-        Route::get('/{project}/edit', [ProjectsController::class, 'edit'])->name('projects.edit');
-        Route::put('/{project}', [ProjectsController::class, 'update'])->name('projects.update');
-        Route::delete('/{project}', [ProjectsController::class, 'destroy'])->name('projects.destroy');
     });
 
     // Tasks Routes
     Route::prefix('tasks')->group(function () {
+        // Only project_manager can manage tasks (static routes first)
+        Route::middleware('rolemiddleware:project_manager')->group(function () {
+            Route::get('/create', [TasksController::class, 'create'])->name('tasks.create');
+            Route::post('/', [TasksController::class, 'store'])->name('tasks.store');
+            Route::get('/{task}/edit', [TasksController::class, 'edit'])->name('tasks.edit');
+            Route::put('/{task}', [TasksController::class, 'update'])->name('tasks.update');
+            Route::delete('/{task}', [TasksController::class, 'destroy'])->name('tasks.destroy');
+        });
+        // Viewable by all authenticated users
         Route::get('/', [TasksController::class, 'index'])->name('tasks.index');
-        Route::get('/create', [TasksController::class, 'create'])->name('tasks.create');
-        Route::post('/', [TasksController::class, 'store'])->name('tasks.store');
         Route::get('/{task}', [TasksController::class, 'show'])->name('tasks.show');
-        Route::get('/{task}/edit', [TasksController::class, 'edit'])->name('tasks.edit');
-        Route::put('/{task}', [TasksController::class, 'update'])->name('tasks.update');
-        Route::delete('/{task}', [TasksController::class, 'destroy'])->name('tasks.destroy');
+        // Allow team_member to update their own task status
         Route::patch('/{task}/status', [TasksController::class, 'updateStatus'])->name('tasks.updateStatus');
     });
 
