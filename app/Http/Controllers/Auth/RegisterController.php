@@ -29,6 +29,7 @@ class RegisterController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
+                'role' => 'required|in:project_manager,team_member',
             ], [
                 'email.unique' => 'Cette adresse email est déjà utilisée.',
                 'email.required' => 'L\'adresse email est requise.',
@@ -37,7 +38,9 @@ class RegisterController extends Controller
                 'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
                 'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
                 'name.required' => 'Le nom est requis.',
-                'name.max' => 'Le nom ne doit pas dépasser 255 caractères.'
+                'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+                'role.required' => 'Veuillez sélectionner un rôle.',
+                'role.in' => 'Le rôle sélectionné n\'est pas valide.'
             ]);
 
             if ($validator->fails()) {
@@ -56,6 +59,7 @@ class RegisterController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'role' => $request->role,
             ]);
 
             if ($request->expectsJson()) {
