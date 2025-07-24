@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 class Project extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +21,6 @@ class Project extends Model
         'start_date',
         'end_date',
         'status',
-        'color',
         'manager_id'
     ];
 
@@ -40,7 +39,7 @@ class Project extends Model
 
         // If there's a search criteria, filter projects based on it
         if ($search !== null) {
-            $query->whereNull('deleted_at');
+            //$query->whereNull('deleted_at');
             $query->where('name', 'like', '%' . $search . '%');
             $query->orderBy('id', 'DESC');
         }
@@ -117,5 +116,13 @@ class Project extends Model
         
         $completedTasks = $this->tasks()->where('status', 'completed')->count();
         return ($completedTasks / $totalTasks) * 100;
+    }
+    public function totalevents()
+    {
+        $totalEvents = $this->events()->count();
+        if ($totalEvents === 0) return 0;
+        
+        $completedEvents = $this->events()->where('status', 'completed')->count();
+        return ($completedEvents / $totalEvents) * 100;
     }
 }

@@ -1,3 +1,4 @@
+@php use Illuminate\Support\Facades\Auth; @endphp
 @extends('layouts.app')
 
 @section('title', 'Tableau de bord - Membre')
@@ -116,6 +117,7 @@
                                 <div>
                                     <h3 class="font-medium text-gray-800">{{ $event->title }}</h3>
                                     <p class="text-sm text-gray-600">{{ $event->start_date->format('H:i') }}</p>
+                                    <p class="text-xs text-gray-500 mb-1">Statut: {{ $event->status }}</p>
                                 </div>
                             </div>
                         </div>

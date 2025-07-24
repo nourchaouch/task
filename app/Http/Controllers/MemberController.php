@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 
 class MemberController extends Controller
@@ -12,18 +13,28 @@ class MemberController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('rolemiddleware:team_member');
+        // Only apply team_member middleware to methods that require it, not index
+        // $this->middleware('rolemiddleware:team_member');
     }
 
     public function index()
     {
-        $assignedTasks = Task::where('assigned_to', Auth::id())->get();
-        $completedTasks = Task::where('assigned_to', Auth::id())->where('status', 'completed')->count();
-        $pendingTasks = Task::where('assigned_to', Auth::id())->where('status', 'pending')->count();
-        $projects = Project::whereHas('tasks', function($query) {
-            $query->where('assigned_to', Auth::id());
-        })->get();
-
-        return view('member.dashboard', compact('assignedTasks', 'completedTasks', 'pendingTasks', 'projects'));
+        $user = auth()->user();
+        if ($user && $user->role === 'project_manager') {
+            // Get all projects managed by this user
+            $projectIds = $user->managedProjects()->pluck('id');
+            // Get members assigned to these projects
+            $members = \App\Models\User::where('role', 'team_member')
+                ->whereHas('memberProjects', function($q) use ($projectIds) {
+                    $q->whereIn('projects.id', $projectIds);
+                })
+                ->with(['memberProjects' => function($q) use ($projectIds) {
+                    $q->whereIn('projects.id', $projectIds);
+                }])
+                ->get();
+        } else {
+            $members = \App\Models\User::with('memberProjects')->where('role', 'team_member')->get();
+        }
+        return view('members.index', compact('members'));
     }
 }

@@ -73,7 +73,7 @@ class DashboardController extends Controller
 
             // Get upcoming events (e.g., events with start_date in the future)
             try {
-                $upcomingEvents = Event::where('start_date', '>=', now())
+                $upcomingEvents = Event::with('members')->where('start_date', '>=', now())
                     ->orderBy('start_date', 'asc')
                     ->take(6)
                     ->get();

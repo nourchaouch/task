@@ -9,10 +9,16 @@ use App\Models\Project;
 class TasksController extends Controller
 {
 
-    public function create()
+    public function create(Request $request)
     {
-        $projects = \App\Models\Project::all();
-        $users = \App\Models\User::all();
+        $projects = \App\Models\Project::with(['members', 'manager'])->get();
+        $users = collect();
+        if ($request->has('project_id')) {
+            $project = \App\Models\Project::with('manager')->find($request->input('project_id'));
+            if ($project) {
+                $users = $project->members;
+            }
+        }
         return view('tasks.create', compact('projects', 'users'));
     }
 
@@ -24,7 +30,7 @@ class TasksController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'priority' => 'nullable|integer',
             'due_date' => 'nullable|date',
-            'status' => 'required|string',
+            // 'status' => 'required|string', // Remove this line
         ]);
         $validated['created_by'] = auth()->id();
         \App\Models\Task::create($validated);
@@ -34,14 +40,15 @@ class TasksController extends Controller
     public function edit($id)
     {
         $task = \App\Models\Task::findOrFail($id);
-        $projects = \App\Models\Project::all();
+        $projects = \App\Models\Project::with(['members', 'manager'])->get();
         $users = \App\Models\User::all();
-        return view('tasks.edit', compact('task', 'projects', 'users'));
+        return view('tasks.create', compact('task', 'projects', 'users'));
     }
 
     public function update(Request $request, $id)
     {
         $task = \App\Models\Task::findOrFail($id);
+        $user = auth()->user();
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'project_id' => 'required|exists:projects,id',
@@ -50,6 +57,13 @@ class TasksController extends Controller
             'due_date' => 'nullable|date',
             'status' => 'required|string',
         ]);
+        // Allow a project member to assign themselves
+        $project = \App\Models\Project::find($validated['project_id']);
+        if ($user && $project && $project->members->contains($user->id)) {
+            if ($request->has('assign_self') && $request->input('assign_self') == '1') {
+                $validated['assigned_to'] = $user->id;
+            }
+        }
         $task->update($validated);
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
@@ -113,6 +127,22 @@ class TasksController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $task = Task::findOrFail($id);
+        $user = auth()->user();
+        // Only the assigned member can update the status
+        if ($task->assigned_to !== $user->id) {
+            abort(403, 'Unauthorized');
+        }
+        $validated = $request->validate([
+            'status' => 'required|in:pending,completed',
+        ]);
+        $task->status = $validated['status'];
+        $task->save();
+        return redirect()->back()->with('success', 'Task status updated.');
     }
 
     /**

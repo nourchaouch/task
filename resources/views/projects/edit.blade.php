@@ -10,17 +10,17 @@
             <input type="text" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="name" name="name" value="{{ $project->name }}" required>
         </div>
         <div>
-            <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
-            <input type="color" class="mt-1 block w-24 h-10 rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="color" name="color" value="{{ $project->color }}" title="Choose your color">
+            <label class="block text-sm font-medium text-gray-700">Project Manager</label>
+            <div class="mt-1 block w-full rounded border-gray-100 bg-gray-50 px-3 py-2 text-gray-700">{{ $project->manager->name ?? 'N/A' }} ({{ $project->manager->email ?? '' }})</div>
         </div>
         <div>
-            <label for="manager_id" class="block text-sm font-medium text-gray-700">Project Manager</label>
-            <select class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="manager_id" name="manager_id">
-                <option value="">Select Manager</option>
-                @foreach($managers as $manager)
-                    <option value="{{ $manager->id }}" @if($project->manager_id == $manager->id) selected @endif>{{ $manager->name }} ({{ $manager->email }})</option>
+            <label for="members" class="block text-sm font-medium text-gray-700">Project Members</label>
+            <select name="members[]" id="members" multiple class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                @foreach($teamMembers as $member)
+                    <option value="{{ $member->id }}" @if(in_array($member->id, $selectedMembers)) selected @endif>{{ $member->name }} ({{ $member->email }})</option>
                 @endforeach
             </select>
+            <small class="text-gray-500">Hold Ctrl (Windows) or Command (Mac) to select multiple members.</small>
         </div>
         <div class="flex space-x-2">
             <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition">Update</button>

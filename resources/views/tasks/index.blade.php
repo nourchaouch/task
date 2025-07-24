@@ -49,6 +49,16 @@
                                     @method('DELETE')
                                     <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded hover:bg-red-200 transition" onclick="return confirm('Are you sure?')">Delete</button>
                                 </form>
+                            @elseif($user && $user->role === 'team_member' && $task->assigned_to === $user->id)
+                                <form action="{{ route('tasks.updateStatus', $task->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="status" class="text-xs rounded border-gray-300 mr-1">
+                                        <option value="pending" @if($task->status == 'pending') selected @endif>Pending</option>
+                                        <option value="completed" @if($task->status == 'completed') selected @endif>Completed</option>
+                                    </select>
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded hover:bg-indigo-200 transition">Update</button>
+                                </form>
                             @endif
                         </td>
                     </tr>

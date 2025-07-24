@@ -13,7 +13,12 @@ class ProjectsController extends Controller
      */
     public function index()
     {
-        $projects = \App\Models\Project::all();
+        $user = auth()->user();
+        if ($user && $user->role === 'team_member') {
+            $projects = $user->memberProjects()->with(['members', 'tasks', 'events.members'])->get();
+        } else {
+            $projects = \App\Models\Project::with(['members', 'tasks', 'events.members', 'manager'])->get();
+        }
         return view('projects.index', compact('projects'));
     }
 
@@ -22,8 +27,8 @@ class ProjectsController extends Controller
      */
     public function create()
     {
-        $managers = \App\Models\User::where('role', 'project_manager')->get();
-        return view('projects.create', compact('managers'));
+        $teamMembers = \App\Models\User::where('role', 'team_member')->get();
+        return view('projects.create', compact('teamMembers'));
     }
 
     /**
@@ -33,10 +38,19 @@ class ProjectsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'color' => 'required|string|max:50',
-            'manager_id' => 'nullable|exists:users,id',
+            'members' => 'nullable|array',
+            'members.*' => 'exists:users,id',
         ]);
-        \App\Models\Project::create($validated);
+        $user = auth()->user();
+        if ($user && $user->role === 'project_manager') {
+            $validated['manager_id'] = $user->id;
+        }
+        $project = \App\Models\Project::create($validated);
+        $memberIds = $validated['members'] ?? [];
+        if ($user && !in_array($user->id, $memberIds)) {
+            $memberIds[] = $user->id;
+        }
+        $project->members()->sync($memberIds);
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
@@ -45,7 +59,8 @@ class ProjectsController extends Controller
      */
     public function show(\App\Models\Project $project)
     {
-        $project->load('tasks');
+        // Removed manager/member authorization check to allow all authenticated users to view any project
+        $project->load(['tasks', 'members', 'events.members']);
         return view('projects.show', compact('project'));
     }
 
@@ -55,7 +70,9 @@ class ProjectsController extends Controller
     public function edit(\App\Models\Project $project)
     {
         $managers = \App\Models\User::where('role', 'project_manager')->get();
-        return view('projects.edit', compact('project', 'managers'));
+        $teamMembers = \App\Models\User::where('role', 'team_member')->get();
+        $selectedMembers = $project->members()->pluck('users.id')->toArray();
+        return view('projects.edit', compact('project', 'managers', 'teamMembers', 'selectedMembers'));
     }
 
     /**
@@ -65,10 +82,15 @@ class ProjectsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'color' => 'required|string|max:50',
             'manager_id' => 'nullable|exists:users,id',
+            'members' => 'nullable|array',
+            'members.*' => 'exists:users,id',
         ]);
         $project->update($validated);
+        // Sync project members if provided
+        if (isset($validated['members'])) {
+            $project->members()->sync($validated['members']);
+        }
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
@@ -79,5 +101,16 @@ class ProjectsController extends Controller
     {
         $project->delete();
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+    }
+
+    public function join($projectId)
+    {
+        $user = auth()->user();
+        $project = \App\Models\Project::findOrFail($projectId);
+        if ($user && !$project->members->contains($user->id)) {
+            $project->members()->attach($user->id);
+            return back()->with('success', 'You have joined the project.');
+        }
+        return back()->with('info', 'You are already a member of this project.');
     }
 }

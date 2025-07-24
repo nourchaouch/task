@@ -21,6 +21,7 @@
 
         <!-- Members Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @php $authUser = auth()->user(); @endphp
             @foreach($members as $member)
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
@@ -39,6 +40,26 @@
                             <p class="text-sm text-gray-500">
                                 {{ $member->email }}
                             </p>
+                            @if($member->memberProjects->count())
+                                <div class="mt-2">
+                                    <span class="text-xs text-gray-600">Projects:</span>
+                                    <ul class="list-disc list-inside text-xs text-gray-700">
+                                        @foreach($member->memberProjects as $project)
+                                            <li>
+                                                {{ $project->name }}
+                                                @if($authUser && !$project->members->contains($authUser->id))
+                                                    <form method="POST" action="{{ route('projects.join', $project->id) }}" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition">Join</button>
+                                                    </form>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @else
+                                <div class="mt-2 text-xs text-gray-400">No projects</div>
+                            @endif
                         </div>
                     </div>
 

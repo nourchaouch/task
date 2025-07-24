@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
 
 // All protected routes are in the auth middleware group below
 
+
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     // Manager Dashboard
@@ -51,6 +52,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Events index route for all authenticated users
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    // Events management for project managers
+    Route::middleware('rolemiddleware:project_manager')->group(function () {
+        Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+        Route::post('/events', [EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    });
+    // Show event (all authenticated users)
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    // Allow event member to update their own event status
+    Route::patch('/events/{event}/status', [EventController::class, 'updateStatus'])->name('events.updateStatus');
+    
 });
 
 // Protected routes
@@ -70,6 +84,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Viewable by all authenticated users
         Route::get('/', [ProjectsController::class, 'index'])->name('projects.index');
         Route::get('/{project}', [ProjectsController::class, 'show'])->name('projects.show');
+        Route::post('/projects/{project}/join', [App\Http\Controllers\ProjectsController::class, 'join'])->name('projects.join');
     });
 
     // Tasks Routes
@@ -89,3 +104,15 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::patch('/{task}/status', [TasksController::class, 'updateStatus'])->name('tasks.updateStatus');
     });
 });
+
+// Calendrier
+Route::get('/calendar', function () {
+    return view('calendar.index');
+})->name('calendar.index');
+Route::get('/calendar/data', [App\Http\Controllers\CalendarController::class, 'data'])->name('calendar.data');
+
+// Marquer toutes les notifications comme lues
+Route::post('/notifications/mark-all-read', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('notifications.markAllRead')->middleware('auth');
