@@ -22,7 +22,8 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -32,7 +33,8 @@
                 @forelse($events as $event)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-gray-900">{{ $event->title }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $event->date ? \Carbon\Carbon::parse($event->date)->format('Y-m-d H:i') : '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $event->start_date ? \Carbon\Carbon::parse($event->start_date)->format('Y-m-d H:i') : '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d H:i') : '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $event->project->name ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
@@ -71,7 +73,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No events found.</td>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">No events found.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -13,8 +13,12 @@
             <textarea class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="description" name="description"></textarea>
         </div>
         <div>
-            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-            <input type="datetime-local" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="date" name="date" required>
+            <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+            <input type="datetime-local" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="start_date" name="start_date" required>
+        </div>
+        <div>
+            <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+            <input type="datetime-local" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="end_date" name="end_date" required>
         </div>
         <div>
             <label for="project_id" class="block text-sm font-medium text-gray-700">Project</label>

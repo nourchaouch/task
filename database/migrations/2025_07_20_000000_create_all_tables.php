@@ -52,7 +52,8 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('status')->default('todo');
-            $table->dateTime('date');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

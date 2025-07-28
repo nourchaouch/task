@@ -27,16 +27,16 @@ class EventReminder extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Rappel : événement à venir')
-            ->line("L'événement \"{$this->event->title}\" est prévu pour le {$this->event->date->format('d/m/Y H:i')}.")
-            ->action('Voir l\'événement', route('events.show', $this->event->id));
+            ->line("L'événement \"{$this->event->title}\" est prévu du {$this->event->start_date->format('d/m/Y H:i')} au {$this->event->end_date->format('d/m/Y H:i')}.")
+            ->action('Voir l\'événement', route('events.show', $this->event));
     }
 
     public function toArray($notifiable)
     {
         return [
-            'event_id' => $this->event->id,
             'title' => $this->event->title,
-            'date' => $this->event->date,
+            'start_date' => $this->event->start_date,
+            'end_date' => $this->event->end_date,
         ];
     }
 } 

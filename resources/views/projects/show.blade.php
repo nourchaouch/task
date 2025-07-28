@@ -36,7 +36,7 @@
         <ul class="divide-y divide-gray-100 mb-3">
             @foreach($project->events as $event)
                 <li class="flex justify-between items-center py-2">
-                    <span>{{ $event->title }} ({{ $event->date ? \Carbon\Carbon::parse($event->date)->format('Y-m-d H:i') : '-' }})</span>
+                    <span>{{ $event->title }} ({{ $event->start_date ? \Carbon\Carbon::parse($event->start_date)->format('Y-m-d H:i') : '-' }} - {{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d H:i') : '-' }})</span>
                     <span class="px-2 py-1 rounded text-xs font-semibold
                         @if($event->status == 'completed') bg-green-100 text-green-800
                         @elseif($event->status == 'in_progress') bg-blue-100 text-blue-800

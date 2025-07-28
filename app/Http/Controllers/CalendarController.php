@@ -12,8 +12,8 @@ class CalendarController extends Controller
         $events = Event::all()->map(function($event) {
             return [
                 'title' => $event->title,
-                'start' => $event->date,
-                'end'   => $event->date,
+                'start' => $event->start_date,
+                'end'   => $event->end_date,
                 'color' => '#38b2ac', // turquoise
                 'url'   => route('events.show', $event),
             ];

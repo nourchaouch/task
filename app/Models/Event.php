@@ -18,12 +18,14 @@ class Event extends Model
         'description',
         'project_id',
         'status',
-        'date',
+        'start_date',
+        'end_date',
         'created_by'
     ];
 
     protected $casts = [
-        'date' => 'datetime',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
     ];
 
     /**
