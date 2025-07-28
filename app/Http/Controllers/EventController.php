@@ -14,7 +14,18 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::with('project')->get();
+        $user = auth()->user();
+        if ($user && $user->role === 'team_member') {
+            $events = Event::with(['project'])->get();
+        } elseif ($user && $user->role === 'project_manager') {
+            $events = Event::with(['project'])
+                ->whereHas('project', function($query) use ($user) {
+                    $query->where('manager_id', $user->id);
+                })->get();
+        } else {
+            $events = Event::with(['project'])->get();
+        }
+        
         return view('events.index', compact('events'));
     }
     
@@ -25,7 +36,8 @@ class EventController extends Controller
     public function create()
     {
         $projects = Project::all();
-        return view('events.create', compact('projects'));
+        $users = \App\Models\User::all();
+        return view('events.create', compact('projects', 'users'));
     }
 
     /**
@@ -49,7 +61,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load('project');
+        $event->load(['project']);
         return view('events.show', compact('event'));
     }
 
@@ -59,7 +71,8 @@ class EventController extends Controller
     public function edit(Event $event)
     {
         $projects = Project::all();
-        return view('events.edit', compact('event', 'projects'));
+        $users = \App\Models\User::all();
+        return view('events.edit', compact('event', 'projects', 'users'));
     }
 
     /**
@@ -93,10 +106,10 @@ class EventController extends Controller
     public function updateStatus(Request $request, Event $event)
     {
         $user = auth()->user();
-        // Only event members can update the status
-        if (!$event->members->contains($user->id)) {
-            abort(403, 'Unauthorized');
-        }
+        // Only the assigned member can update the status
+        // if ($event->assigned_to != $user->id) {
+        //     abort(403, 'Unauthorized');
+        // }
         $validated = $request->validate([
             'status' => 'required|in:todo,in_progress,blocked,completed',
         ]);

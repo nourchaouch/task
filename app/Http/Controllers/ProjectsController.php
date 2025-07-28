@@ -15,10 +15,18 @@ class ProjectsController extends Controller
     {
         $user = auth()->user();
         if ($user && $user->role === 'team_member') {
-            $projects = $user->memberProjects()->with(['members', 'tasks', 'events.members'])->get();
+            $projects = $user->memberProjects()->with(['members', 'tasks'])->get();
+        } elseif ($user && $user->role === 'project_manager') {
+            $projects = \App\Models\Project::with(['members', 'tasks', 'manager'])->where('manager_id', $user->id)->get();
         } else {
-            $projects = \App\Models\Project::with(['members', 'tasks', 'events.members', 'manager'])->get();
+            $projects = \App\Models\Project::with(['members', 'tasks', 'manager'])->get();
         }
+        
+        // Test: Create a notification if user has no notifications
+        if ($user && $user->notifications()->count() === 0) {
+            $user->notify(new \App\Notifications\TaskReminder(\App\Models\Task::first() ?? new \App\Models\Task(['title' => 'Test Task'])));
+        }
+        
         return view('projects.index', compact('projects'));
     }
 
@@ -51,6 +59,13 @@ class ProjectsController extends Controller
             $memberIds[] = $user->id;
         }
         $project->members()->sync($memberIds);
+        // Notify each member
+        foreach ($memberIds as $memberId) {
+            $member = \App\Models\User::find($memberId);
+            if ($member) {
+                $member->notify(new \App\Notifications\ProjectAssigned($project));
+            }
+        }
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
@@ -60,7 +75,7 @@ class ProjectsController extends Controller
     public function show(\App\Models\Project $project)
     {
         // Removed manager/member authorization check to allow all authenticated users to view any project
-        $project->load(['tasks', 'members', 'events.members']);
+        $project->load(['tasks', 'members']);
         return view('projects.show', compact('project'));
     }
 
@@ -89,7 +104,18 @@ class ProjectsController extends Controller
         $project->update($validated);
         // Sync project members if provided
         if (isset($validated['members'])) {
-            $project->members()->sync($validated['members']);
+            // Get current and new member IDs
+            $currentMembers = $project->members()->pluck('users.id')->toArray();
+            $newMembers = $validated['members'];
+            $project->members()->sync($newMembers);
+            // Notify only newly added members
+            $addedMembers = array_diff($newMembers, $currentMembers);
+            foreach ($addedMembers as $memberId) {
+                $member = \App\Models\User::find($memberId);
+                if ($member) {
+                    $member->notify(new \App\Notifications\ProjectAssigned($project));
+                }
+            }
         }
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }

@@ -54,6 +54,19 @@
                                     <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded hover:bg-red-200 transition" onclick="return confirm('Are you sure you want to delete this event?')">Delete</button>
                                 </form>
                             @endif
+                            @if($user && $event->assigned_to == $user->id)
+                                <form action="{{ route('events.updateStatus', $event) }}" method="POST" class="inline-flex items-center space-x-1">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="status" class="text-xs rounded border-gray-300 mr-1">
+                                        <option value="todo" @if($event->status == 'todo') selected @endif>To Do</option>
+                                        <option value="in_progress" @if($event->status == 'in_progress') selected @endif>In Progress</option>
+                                        <option value="blocked" @if($event->status == 'blocked') selected @endif>Blocked</option>
+                                        <option value="completed" @if($event->status == 'completed') selected @endif>Completed</option>
+                                    </select>
+                                    <button type="submit" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded hover:bg-indigo-200 transition">Update</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

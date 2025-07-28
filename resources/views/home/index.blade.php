@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Accueil - Gestion des tâches')
+@section('title', 'Home - Task Management')
 
 @section('content')
 <div class="relative bg-white">
@@ -12,26 +12,26 @@
         </div>
         <div class="relative px-4 py-24 sm:px-6 sm:py-32 lg:py-40 lg:px-8">
             <h1 class="text-center text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Gestion des Tâches Simplifiée
+                Simplified Task Management
             </h1>
             <p class="mx-auto mt-6 max-w-lg text-center text-xl text-indigo-100 sm:max-w-3xl">
-                Organisez, suivez et collaborez sur vos projets efficacement
+                Organize, track, and collaborate on your projects efficiently
             </p>
             <div class="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
                 @guest
                     <div class="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
                         <a href="{{ route('login') }}" class="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-indigo-700 shadow-sm hover:bg-indigo-50 sm:px-8">
-                            Se connecter
+                            Sign In
                         </a>
                         <a href="{{ route('register') }}" class="flex items-center justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-600 sm:px-8">
-                            S'inscrire
+                            Sign Up
                         </a>
                     </div>
                 @else
                     <div class="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
                         <a href="{{ auth()->user()->role === 'project_manager' ? route('dashboard.manager') : route('dashboard.member') }}" 
                            class="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-indigo-700 shadow-sm hover:bg-indigo-50 sm:px-8">
-                            Accéder au tableau de bord
+                            Access Dashboard
                         </a>
                     </div>
                 @endguest
@@ -43,9 +43,9 @@
     <div class="py-24 sm:py-32 bg-white">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mx-auto max-w-2xl lg:text-center">
-                <h2 class="text-base font-semibold leading-7 text-indigo-600">Plus efficace</h2>
+                <h2 class="text-base font-semibold leading-7 text-indigo-600">More Efficient</h2>
                 <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                    Tout ce dont vous avez besoin pour gérer vos projets
+                    Everything you need to manage your projects
                 </p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
@@ -56,8 +56,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Gestion des tâches</h3>
-                    <p class="text-gray-600">Organisez et suivez vos tâches efficacement. Définissez des priorités et des échéances.</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Task Management</h3>
+                    <p class="text-gray-600">Organize and track your tasks efficiently. Set priorities and deadlines.</p>
                 </div>
 
                 <!-- Feature 2 -->
@@ -67,7 +67,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Travail d'équipe</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Team Collaboration</h3>
                     <p class="text-gray-600">Collaborez facilement avec votre équipe. Partagez des informations et suivez les progrès.</p>
                 </div>
 
@@ -78,8 +78,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Suivez vos progrès</h3>
-                    <p class="text-gray-600">Visualisez l'avancement de vos projets avec des statistiques et des rapports détaillés.</p>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Track Progress</h3>
+                    <p class="text-gray-600">See your project progress with detailed statistics and reports.</p>
                 </div>
             </div>
 
@@ -94,7 +94,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total des projets</p>
+                            <p class="text-sm font-medium text-gray-600">Total Projects</p>
                             <p class="text-lg font-semibold text-gray-800">{{ $projectsCount }}</p>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Tâches en cours</p>
+                            <p class="text-sm font-medium text-gray-600">Ongoing Tasks</p>
                             <p class="text-lg font-semibold text-gray-800">{{ $tasksCount }}</p>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Membres d'équipe</p>
+                            <p class="text-sm font-medium text-gray-600">Team Members</p>
                             <p class="text-lg font-semibold text-gray-800">{{ $teamMembersCount }}</p>
                         </div>
                     </div>

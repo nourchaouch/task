@@ -26,7 +26,7 @@
                 @endforeach
             </select>
         </div>
-        {{-- Remove any form fields for assigning users or event members --}}
+        {{-- Remove assigned_to select and label --}}
         <div class="flex space-x-2">
             <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition">Update</button>
             <a href="{{ route('events.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded hover:bg-gray-300 transition">Cancel</a>

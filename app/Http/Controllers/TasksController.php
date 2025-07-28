@@ -33,7 +33,14 @@ class TasksController extends Controller
             // 'status' => 'required|string', // Remove this line
         ]);
         $validated['created_by'] = auth()->id();
-        \App\Models\Task::create($validated);
+        $task = \App\Models\Task::create($validated);
+        // Notify assigned user if set
+        if ($task->assigned_to) {
+            $user = \App\Models\User::find($task->assigned_to);
+            if ($user) {
+                $user->notify(new \App\Notifications\TaskReminder($task));
+            }
+        }
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
@@ -57,14 +64,21 @@ class TasksController extends Controller
             'due_date' => 'nullable|date',
             'status' => 'required|string',
         ]);
-        // Allow a project member to assign themselves
         $project = \App\Models\Project::find($validated['project_id']);
         if ($user && $project && $project->members->contains($user->id)) {
             if ($request->has('assign_self') && $request->input('assign_self') == '1') {
                 $validated['assigned_to'] = $user->id;
             }
         }
+        $oldAssignedTo = $task->assigned_to;
         $task->update($validated);
+        // Notify only if assigned_to changed and is set
+        if ($task->assigned_to && $task->assigned_to != $oldAssignedTo) {
+            $assignedUser = \App\Models\User::find($task->assigned_to);
+            if ($assignedUser) {
+                $assignedUser->notify(new \App\Notifications\TaskReminder($task));
+            }
+        }
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
@@ -150,7 +164,18 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = \App\Models\Task::with(['project', 'assignedTo'])->get();
+        $user = auth()->user();
+        if ($user && $user->role === 'team_member') {
+            $tasks = \App\Models\Task::with(['project', 'assignedTo'])->where('assigned_to', $user->id)->get();
+        } elseif ($user && $user->role === 'project_manager') {
+            $tasks = \App\Models\Task::with(['project', 'assignedTo'])
+                ->whereHas('project', function($query) use ($user) {
+                    $query->where('manager_id', $user->id);
+                })->get();
+        } else {
+            $tasks = \App\Models\Task::with(['project', 'assignedTo'])->get();
+        }
+        
         return view('tasks.index', compact('tasks'));
     }
 

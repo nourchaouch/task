@@ -19,8 +19,7 @@ class Event extends Model
         'project_id',
         'status',
         'date',
-        'created_by',
-        'assigned_to'
+        'created_by'
     ];
 
     protected $casts = [
@@ -46,22 +45,6 @@ class Event extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /**
-     * Get the assigned users.
-     */
-    public function members()
-    {
-        return $this->belongsToMany(User::class, 'event_members')->withTimestamps();
-    }
-
-    /**
-     * Get the user assigned to the event.
-     */
-    public function assignedTo()
-    {
-        return $this->belongsTo(User::class, 'assigned_to');
     }
 
     /**
