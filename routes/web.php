@@ -9,6 +9,7 @@ use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GeminiChatController;
 
 // Authentication Routes
 Route::middleware(['web'])->group(function () {
@@ -24,6 +25,9 @@ Route::middleware(['web'])->group(function () {
     Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])
         ->name('logout')
         ->middleware('auth');
+
+    // Gemini AI Chatbot route (for both guests and authenticated users)
+    Route::post('/gemini-chat', [GeminiChatController::class, 'chat'])->name('gemini.chat');
 });
 
 // Public Routes
