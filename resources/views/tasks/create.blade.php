@@ -48,7 +48,15 @@
         </div>
         <div>
             <label for="priority" class="block text-sm font-medium text-gray-700">Priority</label>
-            <input type="number" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="priority" name="priority" min="0" value="{{ old('priority', $task->priority ?? 0) }}">
+            <select class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" id="priority" name="priority" required>
+                @php
+                    $priorityOptions = [0 => 'Low', 1 => 'Medium', 2 => 'High', 3 => 'Critical'];
+                    $selectedPriority = old('priority', $task->priority ?? 0);
+                @endphp
+                @foreach($priorityOptions as $value => $label)
+                    <option value="{{ $value }}" @if($selectedPriority == $value) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
         </div>
         <div>
             <label for="due_date" class="block text-sm font-medium text-gray-700">Due Date</label>

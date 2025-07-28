@@ -15,12 +15,15 @@
         </div>
         <div>
             <label for="members" class="block text-sm font-medium text-gray-700">Project Members</label>
-            <select name="members[]" id="members" multiple class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <div class="mt-2 space-y-1">
                 @foreach($teamMembers as $member)
-                    <option value="{{ $member->id }}" @if(in_array($member->id, $selectedMembers)) selected @endif>{{ $member->name }} ({{ $member->email }})</option>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="members[]" value="{{ $member->id }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" @if(in_array($member->id, $selectedMembers)) checked @endif>
+                        <span class="ml-2 text-gray-700">{{ $member->name }} ({{ $member->email }})</span>
+                    </label><br>
                 @endforeach
-            </select>
-            <small class="text-gray-500">Hold Ctrl (Windows) or Command (Mac) to select multiple members.</small>
+            </div>
+            <small class="text-gray-500">Select one or more members for this project.</small>
         </div>
         <div class="flex space-x-2">
             <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition">Update</button>

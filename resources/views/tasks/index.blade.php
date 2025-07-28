@@ -29,7 +29,17 @@
                         <td class="px-6 py-4 whitespace-nowrap text-gray-900">{{ $task->title }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $task->project->name ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $task->assignedTo->name ?? '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $task->priority }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $priorityLabels = [0 => ['Low', 'bg-green-100 text-green-800'], 1 => ['Medium', 'bg-yellow-100 text-yellow-800'], 2 => ['High', 'bg-orange-100 text-orange-800'], 3 => ['Critical', 'bg-red-100 text-red-800']];
+                                $priority = $task->priority ?? 0;
+                                $label = $priorityLabels[$priority][0] ?? 'Unknown';
+                                $badgeClass = $priorityLabels[$priority][1] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+                            <span class="px-2 py-1 rounded text-xs font-semibold {{ $badgeClass }}">
+                                {{ $label }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $task->due_date ? $task->due_date->format('Y-m-d') : '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 rounded text-xs font-semibold

@@ -5,7 +5,17 @@
     <p class="mb-2"><strong>Description:</strong> <span class="text-gray-700">{{ $task->description ?? '-' }}</span></p>
     <p class="mb-2"><strong>Project:</strong> <span class="text-gray-700">{{ $task->project->name ?? '-' }}</span></p>
     <p class="mb-2"><strong>Assigned To:</strong> <span class="text-gray-700">{{ $task->assignedTo->name ?? '-' }}</span></p>
-    <p class="mb-2"><strong>Priority:</strong> <span class="text-gray-700">{{ $task->priority ?? '-' }}</span></p>
+    <p class="mb-2"><strong>Priority:</strong> <span class="text-gray-700">
+    @php
+        $priorityLabels = [0 => ['Low', 'bg-green-100 text-green-800'], 1 => ['Medium', 'bg-yellow-100 text-yellow-800'], 2 => ['High', 'bg-orange-100 text-orange-800'], 3 => ['Critical', 'bg-red-100 text-red-800']];
+        $priority = $task->priority ?? 0;
+        $label = $priorityLabels[$priority][0] ?? 'Unknown';
+        $badgeClass = $priorityLabels[$priority][1] ?? 'bg-gray-100 text-gray-800';
+    @endphp
+    <span class="px-2 py-1 rounded text-xs font-semibold {{ $badgeClass }}">
+        {{ $label }}
+    </span>
+</span></p>
     <p class="mb-2"><strong>Due Date:</strong> <span class="text-gray-700">{{ $task->due_date ? $task->due_date->format('Y-m-d') : '-' }}</span></p>
     <p class="mb-2"><strong>Created By:</strong> <span class="text-gray-700">{{ $task->creator->name ?? '-' }}</span></p>
     <p class="mb-2"><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs font-semibold
