@@ -7,6 +7,64 @@
     <title>{{ config('app.name', 'TaskManager') }} - @yield('title', 'Authentication')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+    <style>
+        .markdown-content {
+            line-height: 1.6;
+        }
+        .markdown-content p {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .markdown-content pre {
+            background-color: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content table th,
+        .markdown-content table td {
+            border: 1px solid #d1d5db;
+            padding: 0.25rem 0.5rem;
+            text-align: left;
+        }
+        .markdown-content table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+            color: #6b7280;
+        }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            margin: 0.5rem 0 0.25rem 0;
+            font-weight: 600;
+        }
+        .markdown-content h1 { font-size: 1.25rem; }
+        .markdown-content h2 { font-size: 1.125rem; }
+        .markdown-content h3 { font-size: 1rem; }
+    </style>
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
@@ -49,7 +107,7 @@
                 <template x-for="msg in messages" :key="msg.id">
                     <div :class="msg.user ? 'text-right' : 'text-left'">
                         <div :class="msg.user ? 'bg-indigo-100 text-indigo-800 ml-16' : 'bg-gray-100 text-gray-700 mr-16'" class="inline-block px-3 py-2 rounded-lg mb-1">
-                            <span x-text="msg.text"></span>
+                            <span x-html="renderMarkdown(msg.text)" class="markdown-content"></span>
                         </div>
                     </div>
                 </template>
@@ -70,6 +128,17 @@
     </div>
     <script>
 console.log('Chatbot widget loaded');
+// Ensure marked is available
+window.marked = window.marked || function(text) { return text; };
+// Check if marked is properly loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, marked library status:', typeof window.marked);
+    if (typeof window.marked === 'function') {
+        console.log('Marked library is available');
+    } else {
+        console.log('Marked library not found, using fallback');
+    }
+});
 function chatbotWidget() {
         return {
             open: false,
@@ -78,11 +147,31 @@ function chatbotWidget() {
             loading: false,
             id: 0,
             init() {},
+            renderMarkdown(text) {
+                if (!text) return '';
+                try {
+                    console.log('Rendering markdown for:', text.substring(0, 100));
+                    if (window.marked) {
+                        const result = window.marked(text);
+                        console.log('Markdown result:', result.substring(0, 100));
+                        return result;
+                    } else {
+                        console.log('Marked library not available, using plain text');
+                        return text;
+                    }
+                } catch (e) {
+                    console.error('Markdown rendering error:', e);
+                    return text;
+                }
+            },
             async sendMessage() {
                 if (!this.input.trim()) return;
+                const pageContent = (document.body.innerText || document.body.textContent || '').trim().slice(0, 2000);
+                const context = '--- PAGE CONTENT ---\n' + pageContent + '\n--- END PAGE CONTENT ---\n';
+                const fullMessage = context + this.input;
                 const userMsg = { id: ++this.id, text: this.input, user: true };
                 this.messages.push(userMsg);
-                const inputText = this.input;
+                const inputText = fullMessage;
                 this.input = '';
                 this.loading = true;
                 let aiMsg = { id: ++this.id, text: '', user: false };
@@ -130,6 +219,7 @@ function chatbotWidget() {
                     this.messages = this.messages.slice(); // force Alpine to update
                 } catch (e) {
                     aiMsg.text = 'Error contacting AI.';
+                    this.messages = this.messages.map(m => m.id === aiMsg.id ? { ...aiMsg } : m);
                 } finally {
                     this.loading = false;
                 }
