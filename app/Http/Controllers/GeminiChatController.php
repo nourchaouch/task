@@ -19,34 +19,38 @@ class GeminiChatController extends Controller
         $apiKey = 'EH4nhHy9-LKzIQ1tBNCimtDXPkpAj0JQ';
         $userMessage = $request->input('message');
 
-        // If the API expects an OpenAI-style payload:
         $payload = [
             'messages' => [
                 ['role' => 'user', 'content' => $userMessage]
-            ]
+            ],
+            'stream' => true
         ];
 
         try {
-            $response = Http::withHeaders([
+            $client = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
-                'Accept' => 'application/json',
-            ])->post($url, $payload);
+                'Accept' => 'text/event-stream',
+            ]);
 
-            if ($response->failed()) {
-                \Log::error('DO AI Agent API error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                $errorMsg = $response->json('error.message') ?? 'Failed to contact DO AI Agent API';
-                return response()->json(['error' => $errorMsg], 500);
-            }
-
-            $data = $response->json();
-            // Try to extract the reply from OpenAI-style response
-            $reply = $data['choices'][0]['message']['content'] ?? $data['reply'] ?? $data['message'] ?? $data['response'] ?? 'No response from AI.';
-            return response()->json(['reply' => $reply]);
+            return response()->stream(function () use ($client, $url, $payload) {
+                $response = $client->withOptions(['stream' => true])->post($url, $payload);
+                $body = $response->getBody();
+                while (!$body->eof()) {
+                    $chunk = $body->read(4096);
+                    if ($chunk) {
+                        // Forward the chunk to the frontend as-is
+                        echo $chunk;
+                        ob_flush();
+                        flush();
+                    }
+                }
+            }, 200, [
+                'Content-Type' => 'text/event-stream',
+                'Cache-Control' => 'no-cache',
+                'X-Accel-Buffering' => 'no',
+            ]);
         } catch (\Exception $e) {
-            \Log::error('DO AI Agent API exception', [
+            \Log::error('DO AI Agent API stream exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

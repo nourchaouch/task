@@ -226,8 +226,9 @@ function chatbotWidget() {
             const inputText = this.input;
             this.input = '';
             this.loading = true;
+            let aiMsg = { id: ++this.id, text: '', user: false };
+            this.messages.push(aiMsg);
             try {
-                console.log('Sending to Gemini:', inputText);
                 const res = await fetch('/gemini-chat', {
                     method: 'POST',
                     headers: {
@@ -236,12 +237,40 @@ function chatbotWidget() {
                     },
                     body: JSON.stringify({ message: inputText })
                 });
-                console.log('Received response:', res);
-                const data = await res.json();
-                this.messages.push({ id: ++this.id, text: data.reply || 'No response from AI.', user: false });
+                if (!res.body) throw new Error('No response body');
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+                let buffer = '';
+                while (!done) {
+                    const { value, done: doneReading } = await reader.read();
+                    done = doneReading;
+                    if (value) {
+                        buffer += decoder.decode(value, { stream: true });
+                        // Parse SSE or JSONL chunks
+                        let lines = buffer.split('\n');
+                        buffer = lines.pop(); // last incomplete line
+                        for (let line of lines) {
+                            line = line.trim();
+                            if (!line || line === 'data: [DONE]') continue;
+                            if (line.startsWith('data:')) line = line.slice(5).trim();
+                            try {
+                                const data = JSON.parse(line);
+                                const delta = data.choices?.[0]?.delta?.content;
+                                if (typeof delta !== 'undefined') {
+                                    aiMsg.text += delta;
+                                    this.messages = this.messages.map(m => m.id === aiMsg.id ? { ...aiMsg } : m);
+                                }
+                            } catch (e) {
+                                aiMsg.text += line;
+                                this.messages = this.messages.map(m => m.id === aiMsg.id ? { ...aiMsg } : m);
+                            }
+                        }
+                    }
+                }
+                this.messages = this.messages.slice(); // force Alpine to update
             } catch (e) {
-                console.error('Chatbot fetch error:', e);
-                this.messages.push({ id: ++this.id, text: 'Error contacting AI.', user: false });
+                aiMsg.text = 'Error contacting AI.';
             } finally {
                 this.loading = false;
             }
