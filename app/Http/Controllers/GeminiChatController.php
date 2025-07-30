@@ -14,39 +14,39 @@ class GeminiChatController extends Controller
             'message' => 'required|string',
         ]);
 
-        $apiKey = Config::get('services.gemini.api_key');
+        // DigitalOcean AI Agent endpoint and key
+        $url = 'https://bzksfgtnbzdoc3zsw2e6alvm.agents.do-ai.run/api/v1/chat/completions';
+        $apiKey = 'EH4nhHy9-LKzIQ1tBNCimtDXPkpAj0JQ';
         $userMessage = $request->input('message');
 
-        // Gemini API endpoint for chat (update if needed)
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' . $apiKey;
-
+        // If the API expects an OpenAI-style payload:
         $payload = [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $userMessage]
-                    ]
-                ]
+            'messages' => [
+                ['role' => 'user', 'content' => $userMessage]
             ]
         ];
 
         try {
-            $response = Http::post($url, $payload);
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Accept' => 'application/json',
+            ])->post($url, $payload);
 
             if ($response->failed()) {
-                \Log::error('Gemini API error', [
+                \Log::error('DO AI Agent API error', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
-                $errorMsg = $response->json('error.message') ?? 'Failed to contact Gemini API';
+                $errorMsg = $response->json('error.message') ?? 'Failed to contact DO AI Agent API';
                 return response()->json(['error' => $errorMsg], 500);
             }
 
             $data = $response->json();
-            $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'No response from Gemini.';
+            // Try to extract the reply from OpenAI-style response
+            $reply = $data['choices'][0]['message']['content'] ?? $data['reply'] ?? $data['message'] ?? $data['response'] ?? 'No response from AI.';
             return response()->json(['reply' => $reply]);
         } catch (\Exception $e) {
-            \Log::error('Gemini API exception', [
+            \Log::error('DO AI Agent API exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

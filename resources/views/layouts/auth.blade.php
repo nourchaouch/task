@@ -69,7 +69,8 @@
         </button>
     </div>
     <script>
-    function chatbotWidget() {
+console.log('Chatbot widget loaded');
+function chatbotWidget() {
         return {
             open: false,
             input: '',
@@ -85,6 +86,7 @@
                 this.input = '';
                 this.loading = true;
                 try {
+                    console.log('Sending to Gemini:', inputText);
                     const res = await fetch('/gemini-chat', {
                         method: 'POST',
                         headers: {
@@ -93,9 +95,11 @@
                         },
                         body: JSON.stringify({ message: inputText })
                     });
+                    console.log('Received response:', res);
                     const data = await res.json();
                     this.messages.push({ id: ++this.id, text: data.reply || 'No response from AI.', user: false });
                 } catch (e) {
+                    console.error('Chatbot fetch error:', e);
                     this.messages.push({ id: ++this.id, text: 'Error contacting AI.', user: false });
                 } finally {
                     this.loading = false;

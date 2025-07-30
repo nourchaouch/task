@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Gestion des tâches')</title>
     <!-- Remove Bootstrap CSS/JS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -209,6 +210,7 @@
     </button>
 </div>
 <script>
+console.log('Chatbot widget loaded');
 function chatbotWidget() {
     return {
         open: false,
@@ -225,6 +227,7 @@ function chatbotWidget() {
             this.input = '';
             this.loading = true;
             try {
+                console.log('Sending to Gemini:', inputText);
                 const res = await fetch('/gemini-chat', {
                     method: 'POST',
                     headers: {
@@ -233,9 +236,11 @@ function chatbotWidget() {
                     },
                     body: JSON.stringify({ message: inputText })
                 });
+                console.log('Received response:', res);
                 const data = await res.json();
                 this.messages.push({ id: ++this.id, text: data.reply || 'No response from AI.', user: false });
             } catch (e) {
+                console.error('Chatbot fetch error:', e);
                 this.messages.push({ id: ++this.id, text: 'Error contacting AI.', user: false });
             } finally {
                 this.loading = false;
